@@ -190,6 +190,13 @@
                         </a>
                     </li>
                 </ul>
+                {% if session.get('authenticated') %}
+                <form method="post" action="{{ url_for('logout') }}" class="d-flex">
+                    <button type="submit" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right"></i> Esci
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
     </nav>

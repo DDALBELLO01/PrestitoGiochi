@@ -8,13 +8,12 @@ services:
     ports:
       - port: 5000
         type: http
-    env:
-      - name: SECRET_KEY
-        value: change-me-in-wasmer
-      - name: FLASK_DEBUG
-        value: "false"
 owner: ddalbello01
 env:
   PYTHONPATH: /site-packages
   PYTHONEXECUTABLE: /bin/python
+  SECRET_KEY: "e1a8023c-fc47-4729-bf4c-693f68459d57"
+  FLASK_DEBUG: "false"
+  AUTH_USERNAME: "admin"
+  AUTH_PASSWORD: "SentieroDraghi2026"
 app_id: da_RvJI4t0UXxx8

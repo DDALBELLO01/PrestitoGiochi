@@ -7,12 +7,13 @@ import sys
 if os.path.isdir('/site-packages'):
     sys.path.insert(0, '/site-packages')
 
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, session
 from datetime import datetime, timedelta
 from sqlalchemy import func, desc
 from models import db, Gioco, Socio, Prestito, GiocoRuolo
 from forms import GiocoForm, PrestitoForm, SocioForm, GiocoRuoloForm
 from io import BytesIO
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 import requests
 from xml.etree import ElementTree
@@ -25,6 +26,14 @@ if database_dir:
     os.makedirs(database_dir, exist_ok=True)
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['AUTH_USERNAME'] = os.environ.get('AUTH_USERNAME', 'admin')
+app.config['AUTH_PASSWORD_HASH'] = os.environ.get('AUTH_PASSWORD_HASH', '')
+if not app.config['AUTH_PASSWORD_HASH'] and os.environ.get('AUTH_PASSWORD'):
+    app.config['AUTH_PASSWORD_HASH'] = generate_password_hash(os.environ['AUTH_PASSWORD'])
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', '').lower() == 'true'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', f'sqlite:///{database_path}'
 )
@@ -37,6 +46,48 @@ db.init_app(app)
 # Initialize database
 with app.app_context():
     db.create_all()
+
+
+@app.before_request
+def require_login():
+    """Protect every page except authentication and static files."""
+    if request.endpoint in {'login', 'static'}:
+        return None
+    if not session.get('authenticated'):
+        return redirect(url_for('login', next=request.full_path))
+    return None
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Authenticate an operator with the configured password hash."""
+    if session.get('authenticated'):
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        password_hash = app.config['AUTH_PASSWORD_HASH']
+
+        if username == app.config['AUTH_USERNAME'] and password_hash and check_password_hash(password_hash, password):
+            session.clear()
+            session.permanent = True
+            session['authenticated'] = True
+            next_url = request.form.get('next', '')
+            if next_url.startswith('/') and not next_url.startswith('//'):
+                return redirect(next_url)
+            return redirect(url_for('index'))
+
+        flash('Credenziali non valide.', 'error')
+
+    return render_template('login.html', next_url=request.args.get('next', ''))
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    """End the current authenticated session."""
+    session.clear()
+    return redirect(url_for('login'))
 
 
 # ============= ROUTES: HOME & DASHBOARD =============

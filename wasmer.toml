@@ -1,6 +1,6 @@
 [package]
 name = "ddalbello01/software-prestiti"
-version = "0.1.9"
+version = "0.2.3"
 description = "Il Sentiero dei Draghi - gestione prestiti giochi"
 
 [dependencies]
@@ -17,7 +17,4 @@ runner = "wasi"
 
 [command.annotations.wasi]
 main-args = ["-m", "flask", "--app", "/src/app", "run", "--host=0.0.0.0", "--port=8080", "--no-debugger", "--no-reload"]
-env = [
-	"PYTHONEXECUTABLE: /bin/python",
-	"PYTHONPATH: /site-packages",
-]
+env = ["PYTHONEXECUTABLE: /bin/python", "PYTHONPATH: /site-packages"]
