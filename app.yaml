@@ -4,7 +4,7 @@ package: .
 
 services:
   - name: web
-    run: gunicorn --bind 0.0.0.0:$PORT app:app
+    run: python -m flask --app /src/app run --host=0.0.0.0 --port=8080 --no-reload
     ports:
       - port: 5000
         type: http
@@ -13,3 +13,8 @@ services:
         value: change-me-in-wasmer
       - name: FLASK_DEBUG
         value: "false"
+owner: ddalbello01
+env:
+  PYTHONPATH: /site-packages
+  PYTHONEXECUTABLE: /bin/python
+app_id: da_RvJI4t0UXxx8

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">
+            <i class="bi bi-speedometer2 text-primary"></i> Dashboard
+        </h1>
+        <p class="lead">Panoramica del sistema di gestione prestiti</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-0">Prestiti Attivi</h6>
+                        <h2 class="mb-0 mt-2">{{ prestiti_attivi }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-arrow-left-right" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-0">Giochi Disponibili</h6>
+                        <h2 class="mb-0 mt-2">{{ giochi_disponibili }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-check-circle" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-0">Totale Giochi</h6>
+                        <h2 class="mb-0 mt-2">{{ totale_giochi }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-controller" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-0">Soci</h6>
+                        <h2 class="mb-0 mt-2">{{ totale_soci }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-person-badge" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-12">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-0 text-muted">Totale Prestiti (Storico)</h6>
+                        <h2 class="mb-0 mt-2 text-muted">{{ totale_prestiti }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-list-check text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body" style="padding: 30px;">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('prestiti_nuovo') }}" class="btn btn-primary btn-lg w-100" style="padding: 20px; font-size: 1.2rem;">
+                            <i class="bi bi-plus-circle" style="font-size: 1.5rem;"></i><br>
+                            Nuovo Prestito
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('giochi_nuovo') }}" class="btn btn-success btn-lg w-100" style="padding: 20px; font-size: 1.2rem;">
+                            <i class="bi bi-controller" style="font-size: 1.5rem;"></i><br>
+                            Aggiungi Gioco
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('prestiti_attivi') }}" class="btn btn-warning btn-lg w-100" style="padding: 20px; font-size: 1.2rem;">
+                            <i class="bi bi-list-check" style="font-size: 1.5rem;"></i><br>
+                            Visualizza Prestiti
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('statistiche') }}" class="btn btn-info btn-lg w-100" style="padding: 20px; font-size: 1.2rem;">
+                            <i class="bi bi-graph-up" style="font-size: 1.5rem;"></i><br>
+                            Statistiche
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Active Loans -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-clock-history text-primary"></i> Ultimi Prestiti Attivi</h5>
+            </div>
+            <div class="card-body">
+                {% if ultimi_prestiti %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Gioco</th>
+                                    <th>Persona</th>
+                                    <th>Slot</th>
+                                    <th>Data Prestito</th>
+                                    <th>Durata</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prestito in ultimi_prestiti %}
+                                <tr>
+                                    <td><strong>{{ prestito.gioco.titolo }}</strong></td>
+                                    <td>{{ prestito.nome_completo }}</td>
+                                    <td><span class="badge bg-secondary">Slot {{ prestito.slot_archivio }}</span></td>
+                                    <td>{{ prestito.data_prestito.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ prestito.durata_formattata }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ url_for('prestiti_attivi') }}" class="btn btn-sm btn-outline-primary">
+                            Vedi tutti <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Nessun prestito attivo al momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Importa Database - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-upload"></i> Importa Database
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="bi bi-info-circle"></i> Informazioni</h5>
+                        <p>L'importazione permette di ripristinare i dati da un file Excel precedentemente esportato.</p>
+                        <ul class="mb-0">
+                            <li>Seleziona un file <strong>Excel (.xlsx o .xls)</strong> esportato in precedenza</li>
+                            <li>Scegli se sostituire tutti i dati esistenti o aggiungere solo nuovi elementi</li>
+                            <li>Il processo importerà: Giochi, Soci e Prestiti</li>
+                        </ul>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="file" class="form-label">
+                                <strong>File Excel da Importare</strong>
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="file" 
+                                   name="file" 
+                                   accept=".xlsx,.xls"
+                                   required>
+                            <small class="text-muted">
+                                <i class="bi bi-file-earmark-excel"></i> Seleziona un file .xlsx o .xls esportato dal sistema
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="clear_existing" 
+                                       name="clear_existing" 
+                                       value="yes">
+                                <label class="form-check-label" for="clear_existing">
+                                    <strong class="text-danger">Elimina tutti i dati esistenti prima dell'importazione</strong>
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    ⚠️ ATTENZIONE: Se selezionato, tutti i dati attuali verranno eliminati e sostituiti 
+                                    con quelli del file di backup. Se non selezionato, verranno aggiunti solo i nuovi elementi.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Importante:</strong> Si consiglia di esportare un backup prima di procedere con l'importazione.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Annulla
+                            </a>
+                            <div>
+                                <a href="{{ url_for('export_database') }}" class="btn btn-outline-primary me-2">
+                                    <i class="bi bi-download"></i> Esporta Prima
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-upload"></i> Importa Database
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-question-circle"></i> Domande Frequenti
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Quando usare l'importazione?</h6>
+                        <p>- Ripristino da backup dopo un problema<br>
+                           - Trasferimento dati tra computer<br>
+                           - Sincronizzazione con un altro database</p>
+
+                        <h6>Cosa succede ai dati esistenti?</h6>
+                        <p>- Se "Elimina dati esistenti" è selezionato: tutti i dati attuali vengono rimossi<br>
+                           - Se non selezionato: vengono aggiunti solo elementi con ID non esistenti</p>
+
+                        <h6>Formato del file</h6>
+                        <p>File Excel (.xlsx o .xls) con 3 fogli obbligatori: <strong>Giochi</strong>, <strong>Soci</strong> e <strong>Prestiti</strong>.<br>
+                           Il file deve avere la stessa struttura di quello esportato dal sistema.</p>
+                        
+                        <h6>Come ottenere un file di esempio?</h6>
+                        <p>Usa <strong>"Esporta in Excel"</strong> dal menu Database per scaricare un file con la struttura corretta.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

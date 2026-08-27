@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Prestiti Attivi - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="bi bi-arrow-left-right text-primary"></i> Prestiti Attivi</h1>
+        <p class="text-muted">Visualizza e gestisci i prestiti in corso</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('prestiti_nuovo') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nuovo Prestito
+        </a>
+    </div>
+</div>
+
+<!-- Active Loans List -->
+<div class="row">
+    <div class="col-md-12">
+        {% if prestiti %}
+            <!-- Search Bar -->
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cerca per gioco, persona, slot...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> La ricerca filtra i risultati in tempo reale
+                </small>
+            </div>
+            
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="prestitiTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Gioco</th>
+                                    <th>Persona</th>
+                                    <th>Giocatori</th>
+                                    <th>Insegnamento</th>
+                                    <th>Slot</th>
+                                    <th>Data Prestito</th>
+                                    <th>Durata</th>
+                                    <th class="text-end">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prestito in prestiti %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ prestito.gioco.titolo }}</strong>
+                                        {% if prestito.gioco.editore %}
+                                            <br><small class="text-muted">{{ prestito.gioco.editore }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ prestito.nome_completo }}</td>
+                                    <td>
+                                        {% if prestito.numero_giocatori_effettivi %}
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-people-fill"></i> {{ prestito.numero_giocatori_effettivi }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if prestito.socio_insegnante %}
+                                            <span class="badge bg-success" title="Gioco insegnato">
+                                                <i class="bi bi-mortarboard-fill"></i> Sì
+                                            </span>
+                                            <br><small class="text-success">
+                                                {{ prestito.socio_insegnante.nome_completo }}
+                                            </small>
+                                        {% else %}
+                                            <span class="badge bg-secondary">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-folder"></i> {{ prestito.slot_archivio }}
+                                        </span>
+                                    </td>
+                                    <td>{{ prestito.data_prestito.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ prestito.durata_formattata }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <form method="POST" action="{{ url_for('prestiti_restituisci', id=prestito.id) }}" style="display: inline;" class="restituisci-form">
+                                            <button type="button" class="btn btn-sm btn-success" 
+                                                    data-confirm-message="Confermi la restituzione del gioco '{{ prestito.gioco.titolo }}'?"
+                                                    onclick="showConfirmModal(this)">
+                                                <i class="bi bi-check-circle"></i> Restituisci
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% if prestito.note %}
+                                <tr class="table-light">
+                                    <td colspan="6">
+                                        <small><strong>Note:</strong> {{ prestito.note }}</small>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <p class="text-muted">
+                    <i class="bi bi-info-circle"></i> Totale prestiti attivi: <span id="totalCount">{{ prestiti|length }}</span>
+                </p>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                Nessun prestito attivo al momento. Tutti i giochi sono disponibili!
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('prestiti_nuovo') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Crea Nuovo Prestito
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const table = document.getElementById('prestitiTable');
+    const totalCount = document.getElementById('totalCount');
+    
+    if (!searchInput || !table) return;
+    
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr:not(.table-light)'));
+    const totalRows = rows.length;
+    
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+                // Also show note row if it exists
+                const nextRow = row.nextElementSibling;
+                if (nextRow && nextRow.classList.contains('table-light')) {
+                    nextRow.style.display = '';
+                }
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+                // Also hide note row if it exists
+                const nextRow = row.nextElementSibling;
+                if (nextRow && nextRow.classList.contains('table-light')) {
+                    nextRow.style.display = 'none';
+                }
+            }
+        });
+        
+        totalCount.textContent = visibleCount;
+    }
+    
+    searchInput.addEventListener('input', filterTable);
+    
+    clearSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        filterTable();
+        searchInput.focus();
+    });
+});
+</script>
+{% endblock %}

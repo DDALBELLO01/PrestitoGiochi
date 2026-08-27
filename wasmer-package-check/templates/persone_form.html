@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('persone_lista') }}">Persone</a></li>
+                <li class="breadcrumb-item active">{{ title }}</li>
+            </ol>
+        </nav>
+        <h1><i class="bi bi-people text-primary"></i> {{ title }}</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.nome.label(class="form-label") }}
+                            {{ form.nome(class="form-control" + (" is-invalid" if form.nome.errors else "")) }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.nome.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.cognome.label(class="form-label") }}
+                            {{ form.cognome(class="form-control" + (" is-invalid" if form.cognome.errors else "")) }}
+                            {% if form.cognome.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.cognome.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.slot_id.label(class="form-label") }}
+                        {{ form.slot_id(class="form-control" + (" is-invalid" if form.slot_id.errors else ""), placeholder="es. 1") }}
+                        {% if form.slot_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.slot_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> 
+                            Numero dello slot nell'archivio fisico dove è conservato il documento della persona (deve essere univoco)
+                        </small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('persone_lista') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annulla
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Salva Persona
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

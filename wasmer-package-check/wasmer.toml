@@ -1,0 +1,25 @@
+[package]
+entrypoint = "web"
+
+[dependencies]
+"python/python" = "^0.2.0"
+
+[fs]
+"/src/app.py" = "./app.py"
+"/src/forms.py" = "./forms.py"
+"/src/models.py" = "./models.py"
+"/src/ISTRUZIONI.md" = "./ISTRUZIONI.md"
+"/src/templates" = "./templates"
+"/src/static" = "./static"
+"/src/instance" = "./instance"
+"/site-packages" = "./vendor"
+
+[[command]]
+name = "web"
+module = "python/python:python"
+runner = "https://webc.org/runner/wasi"
+
+[command.annotations.wasi]
+atom = "python/python:python"
+main-args = ["-m", "flask", "--app", "/src/app", "run", "--host=0.0.0.0", "--port=8080", "--debug", "--no-reload"]
+env = ["PYTHONEXECUTABLE: /bin/python", "PYTHONPATH: /site-packages"]

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>{{ title }}</h2>
+            <a href="{{ url_for('soci_lista') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Torna alla Lista
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nome" class="form-label">Nome *</label>
+                            {{ form.nome(class="form-control" + (" is-invalid" if form.nome.errors else "")) }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.nome.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="cognome" class="form-label">Cognome *</label>
+                            {{ form.cognome(class="form-control" + (" is-invalid" if form.cognome.errors else "")) }}
+                            {% if form.cognome.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.cognome.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), type="email") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Opzionale</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">Telefono</label>
+                            {{ form.telefono(class="form-control" + (" is-invalid" if form.telefono.errors else "")) }}
+                            {% if form.telefono.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.telefono.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Opzionale</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Note</label>
+                        {{ form.note(class="form-control" + (" is-invalid" if form.note.errors else ""), rows="4") }}
+                        {% if form.note.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.note.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Opzionale - Informazioni aggiuntive sul socio</small>
+                    </div>
+
+                    {% if socio %}
+                    <div class="alert alert-info">
+                        <strong>Giochi associati:</strong>
+                        {% if socio.giochi %}
+                            {% for gioco in socio.giochi %}
+                                <span class="badge bg-primary">{{ gioco.titolo }}</span>
+                            {% endfor %}
+                        {% else %}
+                            Nessun gioco associato
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('soci_lista') }}" class="btn btn-secondary">
+                            Annulla
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Salva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <p class="text-muted">
+                <small>* Campi obbligatori</small>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

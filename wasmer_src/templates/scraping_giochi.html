@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Scraping Giochi da Tavolo - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-globe2"></i> Scraping giochi da tavolo</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Verranno cercati automaticamente su BoardGameGeek i giochi già presenti nel catalogo che hanno uno o più metadati mancanti.</p>
+                    {% if giochi %}
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Gioco</th><th>Metadati mancanti</th></tr></thead>
+                            <tbody>
+                                {% for gioco in giochi %}
+                                <tr>
+                                    <td>{{ gioco.titolo }}</td>
+                                    <td class="text-muted">
+                                        {% if not gioco.editore %}Editore, {% endif %}
+                                        {% if not gioco.anno %}Anno, {% endif %}
+                                        {% if not gioco.numero_giocatori %}Giocatori, {% endif %}
+                                        {% if not gioco.durata %}Durata, {% endif %}
+                                        {% if not gioco.difficolta %}Difficoltà, {% endif %}
+                                        {% if not gioco.immagine_path %}Immagine{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <form method="POST">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-cloud-download"></i> Completa metadati</button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-success mb-3"><i class="bi bi-check-circle"></i> Tutti i giochi posseduti hanno i metadati compilati.</div>
+                    {% endif %}
+                    <a href="{{ url_for('giochi_lista') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Torna ai giochi</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Giochi di Ruolo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Giochi di Ruolo</h1>
+    <a href="{{ url_for('gdr_nuovo') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuova Sessione
+    </a>
+</div>
+
+<!-- Filtri -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="filterTitolo" class="form-label">Cerca per titolo o master</label>
+                <input type="text" class="form-control" id="filterTitolo" placeholder="Filtra...">
+            </div>
+            <div class="col-md-4">
+                <label for="filterStato" class="form-label">Stato</label>
+                <select class="form-select" id="filterStato">
+                    <option value="">Tutti</option>
+                    <option value="completo">Completi</option>
+                    <option value="disponibile">Con posti disponibili</option>
+                    <option value="pronto">Pronti per iniziare</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-secondary w-100" onclick="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset Filtri
+                </button>
+            </div>
+        </div>
+        <div class="mt-2">
+            <small class="text-muted" id="countDisplay">Visualizzati: {{ gdr_list|length }} di {{ gdr_list|length }}</small>
+        </div>
+    </div>
+</div>
+
+{% if gdr_list %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Titolo</th>
+                <th>Master</th>
+                <th>Descrizione</th>
+                <th>Data</th>
+                <th>Orario</th>
+                <th>Giocatori</th>
+                <th>Stato</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody id="gdrTableBody">
+            {% for gdr in gdr_list %}
+            <tr data-gdr-id="{{ gdr.id }}" 
+                data-titolo="{{ gdr.titolo|lower }}" 
+                data-master="{{ gdr.master|lower }}"
+                data-completo="{{ gdr.is_completo }}"
+                data-pronto="{{ gdr.can_start }}">
+                <td>
+                    {% if gdr.immagine_path %}
+                        <img src="{{ gdr.immagine_path }}" alt="{{ gdr.titolo }}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 8px; border-radius: 4px;">
+                    {% endif %}
+                    <strong>{{ gdr.titolo }}</strong>
+                </td>
+                <td>{{ gdr.master }}</td>
+                <td>
+                    {% if gdr.descrizione %}
+                        {{ gdr.descrizione[:100] }}{% if gdr.descrizione|length > 100 %}...{% endif %}
+                    {% else %}
+                        <em class="text-muted">Nessuna descrizione</em>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if gdr.data_sessione %}
+                        <i class="bi bi-calendar"></i> {{ gdr.data_sessione.strftime('%d/%m/%Y') }}
+                    {% else %}
+                        <em class="text-muted">-</em>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if gdr.orario %}
+                        <i class="bi bi-clock"></i> {{ gdr.orario.strftime('%H:%M') }}
+                    {% else %}
+                        <em class="text-muted">-</em>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="me-2">
+                            <i class="bi bi-people-fill"></i> {{ gdr.num_giocatori_iscritti }}/{{ gdr.numero_max_giocatori }}
+                        </span>
+                        <small class="text-muted">(min: {{ gdr.numero_min_giocatori }})</small>
+                    </div>
+                    {% set giocatori_list = gdr.get_giocatori_list() %}
+                    {% if giocatori_list %}
+                    <div class="mt-1">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#giocatori-{{ gdr.id }}" 
+                                aria-expanded="false">
+                            <i class="bi bi-eye"></i> Mostra
+                        </button>
+                        <div class="collapse mt-2" id="giocatori-{{ gdr.id }}">
+                            <ul class="list-unstyled mb-0 small">
+                                {% for nome in giocatori_list %}
+                                <li>{{ nome }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if gdr.is_completo %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-check-circle-fill"></i> Completo
+                        </span>
+                    {% elif gdr.can_start %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-play-fill"></i> Pronto
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning">
+                            <i class="bi bi-hourglass-split"></i> In attesa
+                        </span>
+                    {% endif %}
+                </td>
+                <td>{{ gdr.data_creazione.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('gdr_modifica', id=gdr.id) }}" 
+                           class="btn btn-sm btn-outline-primary" title="Modifica">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('gdr_elimina', id=gdr.id) }}" 
+                              class="d-inline" onsubmit="return showDeleteConfirmModal(event, 'questa sessione GDR')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Elimina">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> Nessuna sessione di gioco di ruolo presente. 
+    <a href="{{ url_for('gdr_nuovo') }}" class="alert-link">Crea la prima sessione</a>.
+</div>
+{% endif %}
+
+<script>
+// Filtering function
+function filterTable() {
+    const filterTitolo = document.getElementById('filterTitolo').value.toLowerCase();
+    const filterStato = document.getElementById('filterStato').value;
+    
+    const rows = document.querySelectorAll('#gdrTableBody tr');
+    let visibleCount = 0;
+    const totalCount = rows.length;
+    
+    rows.forEach(row => {
+        const titolo = row.dataset.titolo;
+        const master = row.dataset.master;
+        const isCompleto = row.dataset.completo === 'True';
+        const isPronto = row.dataset.pronto === 'True';
+        
+        let show = true;
+        
+        // Filter by title or master
+        if (filterTitolo && !titolo.includes(filterTitolo) && !master.includes(filterTitolo)) {
+            show = false;
+        }
+        
+        // Filter by status
+        if (filterStato) {
+            if (filterStato === 'completo' && !isCompleto) {
+                show = false;
+            } else if (filterStato === 'disponibile' && isCompleto) {
+                show = false;
+            } else if (filterStato === 'pronto' && !isPronto) {
+                show = false;
+            }
+        }
+        
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    // Update count display
+    let filterText = [];
+    if (filterTitolo) filterText.push(`testo: "${filterTitolo}"`);
+    if (filterStato) filterText.push(`stato: ${filterStato}`);
+    
+    const countDisplay = document.getElementById('countDisplay');
+    if (filterText.length > 0) {
+        countDisplay.textContent = `Visualizzati: ${visibleCount} di ${totalCount} (filtri: ${filterText.join(', ')})`;
+    } else {
+        countDisplay.textContent = `Visualizzati: ${visibleCount} di ${totalCount}`;
+    }
+}
+
+function resetFilters() {
+    document.getElementById('filterTitolo').value = '';
+    document.getElementById('filterStato').value = '';
+    filterTable();
+}
+
+// Attach event listeners
+document.getElementById('filterTitolo').addEventListener('input', filterTable);
+document.getElementById('filterStato').addEventListener('change', filterTable);
+</script>
+{% endblock %}

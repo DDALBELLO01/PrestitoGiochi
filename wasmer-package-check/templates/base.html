@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Il Sentiero dei Draghi - Prestito Giochi{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4">
+    
+    <style>
+        /* Hide navbar and footer in fullscreen mode (F11) */
+        :fullscreen .navbar,
+        :-webkit-full-screen .navbar,
+        :-moz-full-screen .navbar,
+        :-ms-fullscreen .navbar,
+        :fullscreen footer,
+        :-webkit-full-screen footer,
+        :-moz-full-screen footer,
+        :-ms-fullscreen footer {
+            display: none !important;
+        }
+        
+        :fullscreen main.container,
+        :-webkit-full-screen main.container,
+        :-moz-full-screen main.container,
+        :-ms-fullscreen main.container {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            max-width: 100% !important;
+        }
+        
+        /* Additional fullscreen fixes */
+        html:fullscreen,
+        html:-webkit-full-screen,
+        html:-moz-full-screen {
+            overflow: auto !important;
+        }
+        
+        html:fullscreen body,
+        html:-webkit-full-screen body,
+        html:-moz-full-screen body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        html:fullscreen .navbar,
+        html:-webkit-full-screen .navbar,
+        html:-moz-full-screen .navbar,
+        html:fullscreen footer,
+        html:-webkit-full-screen footer,
+        html:-moz-full-screen footer {
+            display: none !important;
+        }
+        
+        /* Force hide navbar with more specific selectors */
+        html:fullscreen nav.navbar,
+        html:-webkit-full-screen nav.navbar,
+        html:-moz-full-screen nav.navbar {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
+        
+        /* Fullscreen class added by JavaScript */
+        body.is-fullscreen .navbar,
+        body.is-fullscreen footer {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
+        
+        body.is-fullscreen main.container {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            max-width: 100% !important;
+            padding-top: 0 !important;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-dice-5-fill"></i> Il Sentiero dei Draghi
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and 'giochi' in request.endpoint %}active{% endif %}" 
+                           href="#" id="giochiDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-controller"></i> Giochi da Tavolo
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('giochi_lista') }}">Lista Giochi</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('giochi_nuovo') }}">Aggiungi Gioco</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and 'gdr' in request.endpoint %}active{% endif %}" 
+                           href="#" id="gdrDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-dice-6"></i> Giochi di Ruolo
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('gdr_lista') }}">Lista Sessioni</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('gdr_nuovo') }}">Nuova Sessione</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and 'prestiti' in request.endpoint %}active{% endif %}" 
+                           href="#" id="prestitiDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-arrow-left-right"></i> Prestiti
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('prestiti_nuovo') }}">Nuovo Prestito</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('prestiti_attivi') }}">Prestiti Attivi</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('prestiti_storico') }}">Storico</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and 'soci' in request.endpoint %}active{% endif %}" 
+                           href="#" id="sociDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-badge"></i> Soci
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('soci_lista') }}">Lista Soci</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('soci_nuovo') }}">Aggiungi Socio</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and 'statistiche' in request.endpoint %}active{% endif %}" 
+                           href="#" id="statisticheDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-graph-up"></i> Statistiche
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('statistiche') }}">
+                                <i class="bi bi-play-circle"></i> Vista Carousel
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('statistiche_completo') }}">
+                                <i class="bi bi-grid-3x3-gap-fill"></i> Vista Completa
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and request.endpoint in ['export_database', 'import_database', 'scraping_giochi'] %}active{% endif %}" 
+                           href="#" id="databaseDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-database"></i> Database
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('export_database') }}">
+                                <i class="bi bi-file-earmark-excel"></i> Esporta in Excel
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('import_database') }}">
+                                <i class="bi bi-upload"></i> Importa da Excel
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('scraping_giochi') }}">
+                                <i class="bi bi-globe2"></i> Scraping giochi da tavolo
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('reset_prestiti') }}" style="margin: 0;" id="resetPrestitiForm">
+                                    <button type="button" class="dropdown-item text-danger" 
+                                            onclick="showDeleteConfirmModal('⚠️ ATTENZIONE: Questa operazione cancellerà TUTTI i prestiti e metterà tutti i giochi come disponibili. Continuare?', function() { document.getElementById('resetPrestitiForm').submit(); })">
+                                        <i class="bi bi-trash3"></i> Reset Prestiti
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'istruzioni' %}active{% endif %}" href="{{ url_for('istruzioni') }}">
+                            <i class="bi bi-question-circle"></i> Istruzioni
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages as Modal -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const iconMap = {
+                            'success': 'check-circle-fill',
+                            'error': 'exclamation-triangle-fill',
+                            'danger': 'exclamation-triangle-fill',
+                            'warning': 'exclamation-circle-fill',
+                            'info': 'info-circle-fill'
+                        };
+                        const titleMap = {
+                            'success': 'Operazione riuscita',
+                            'error': 'Errore',
+                            'danger': 'Errore',
+                            'warning': 'Attenzione',
+                            'info': 'Informazione'
+                        };
+                        const category = '{{ category }}';
+                        const message = `{{ message|safe }}`;
+                        const icon = iconMap[category] || 'info-circle-fill';
+                        const title = titleMap[category] || 'Notifica';
+                        
+                        showFlashModal(title, message, category, icon);
+                    });
+                </script>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Flash Modal Template -->
+    <div class="modal fade" id="flashModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="flashModalHeader">
+                    <h5 class="modal-title" id="flashModalTitle">
+                        <i class="bi" id="flashModalIcon"></i>
+                        <span id="flashModalTitleText"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="flashModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal Template -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span id="confirmModalTitle">Conferma</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="confirmModalOk">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-muted py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">
+                <i class="bi bi-dice-5-fill text-primary"></i> 
+                Il Sentiero dei Draghi - Sistema Gestione Prestiti Giochi da Tavolo
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=4"></script>
+    
+    <!-- Fullscreen Detection -->
+    <script>
+        // Detect fullscreen state and add class to body
+        function checkFullscreen() {
+            if (document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement ||
+                document.msFullscreenElement ||
+                window.innerHeight == screen.height) {
+                document.body.classList.add('is-fullscreen');
+            } else {
+                document.body.classList.remove('is-fullscreen');
+            }
+        }
+        
+        // Check on load
+        document.addEventListener('DOMContentLoaded', checkFullscreen);
+        
+        // Check on fullscreen change
+        document.addEventListener('fullscreenchange', checkFullscreen);
+        document.addEventListener('webkitfullscreenchange', checkFullscreen);
+        document.addEventListener('mozfullscreenchange', checkFullscreen);
+        document.addEventListener('MSFullscreenChange', checkFullscreen);
+        
+        // Check on resize (for F11)
+        window.addEventListener('resize', checkFullscreen);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

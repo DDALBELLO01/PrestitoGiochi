@@ -1,0 +1,1 @@
+wasmer deploy --path app.yaml --publish-package --no-wait

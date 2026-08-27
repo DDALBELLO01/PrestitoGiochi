@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}Nuovo Prestito - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<style>
+    #gioco_select {
+        height: auto !important;
+        min-height: 300px;
+        max-height: 400px;
+    }
+    
+    #gioco_select option[style*="display: none"] {
+        display: none !important;
+    }
+    
+    #game-search:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+</style>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('prestiti_attivi') }}">Prestiti</a></li>
+                <li class="breadcrumb-item active">Nuovo Prestito</li>
+            </ol>
+        </nav>
+        <h1><i class="bi bi-plus-circle text-primary"></i> Nuovo Prestito</h1>
+        <p class="text-muted">Registra un nuovo prestito di un gioco da tavolo</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <h5 class="mb-3"><i class="bi bi-controller"></i> Gioco</h5>
+                    
+                    <!-- Search Bar for Games -->
+                    <div class="mb-2">
+                        <label for="game-search" class="form-label">Cerca Gioco</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="game-search" placeholder="Digita per filtrare i giochi..." autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="button" id="clear-game-search" style="display: none;">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-funnel"></i> Filtra i giochi in tempo reale
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.gioco_id.label(class="form-label") }}
+                        {{ form.gioco_id(class="form-select" + (" is-invalid" if form.gioco_id.errors else ""), id="gioco_select", size="8") }}
+                        {% if form.gioco_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.gioco_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted" id="game-count-text">
+                            <i class="bi bi-info-circle"></i> Solo giochi attualmente disponibili sono elencati
+                        </small>
+                    </div>
+                    
+                    <!-- Info Gioco Selezionato -->
+                    <div id="game-info" class="alert alert-info" style="display: none;">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                <i class="bi bi-info-circle-fill" style="font-size: 3rem;"></i>
+                            </div>
+                            <div class="col-md-10">
+                                <h5 id="game-title" class="mb-2"></h5>
+                                <p class="mb-1">
+                                    <strong><i class="bi bi-people-fill"></i> Giocatori:</strong> 
+                                    <span id="game-players" class="badge bg-primary">-</span>
+                                </p>
+                                <p class="mb-0">
+                                    <strong><i class="bi bi-clock-fill"></i> Durata:</strong> 
+                                    <span id="game-duration" class="badge bg-success">-</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="numero-giocatori-container" style="display: none;">
+                        {{ form.numero_giocatori_effettivi.label(class="form-label") }}
+                        <div id="numero-giocatori-select-wrapper">
+                            {{ form.numero_giocatori_effettivi(class="form-select", id="numero_giocatori_select") }}
+                        </div>
+                        <div id="numero-giocatori-input-wrapper" style="display: none;">
+                            <input type="number" class="form-control" id="numero_giocatori_input" name="numero_giocatori_effettivi_input" min="1" placeholder="Inserisci numero giocatori">
+                        </div>
+                        <small class="form-text text-muted" id="numero-giocatori-hint">
+                            <i class="bi bi-people"></i> Quante persone giocheranno effettivamente?
+                        </small>
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3" id="insegnante-container" style="display: none;">
+                        {{ form.socio_insegnante_id.label(class="form-label") }}
+                        {{ form.socio_insegnante_id(class="form-select", id="socio_insegnante_select") }}
+                        <small class="form-text text-muted">
+                            <i class="bi bi-mortarboard"></i> Seleziona il socio che insegnerà il gioco (opzionale)
+                        </small>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3"><i class="bi bi-person"></i> Dati Persona</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.nome.label(class="form-label") }}
+                            {{ form.nome(class="form-control" + (" is-invalid" if form.nome.errors else "")) }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.nome.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.cognome.label(class="form-label") }}
+                            {{ form.cognome(class="form-control" + (" is-invalid" if form.cognome.errors else "")) }}
+                            {% if form.cognome.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.cognome.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.tipo_documento.label(class="form-label") }}
+                            {{ form.tipo_documento(class="form-select" + (" is-invalid" if form.tipo_documento.errors else "")) }}
+                            {% if form.tipo_documento.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.tipo_documento.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="bi bi-card-checklist"></i> Tipo di documento lasciato
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.slot_archivio.label(class="form-label") }}
+                            {{ form.slot_archivio(class="form-control" + (" is-invalid" if form.slot_archivio.errors else "")) }}
+                            {% if form.slot_archivio.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.slot_archivio.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="bi bi-folder"></i> Numero slot archivio fisico documenti
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3"><i class="bi bi-pencil"></i> Note</h5>
+                    
+                    <div class="mb-3">
+                        {{ form.note.label(class="form-label") }}
+                        {{ form.note(class="form-control", rows="3", placeholder="Note aggiuntive (opzionale)") }}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Nota:</strong> Il gioco verrà automaticamente segnato come "Non disponibile" una volta creato il prestito.
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('prestiti_attivi') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annulla
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Crea Prestito
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const giocoSelect = document.getElementById('gioco_select');
+    const gameInfo = document.getElementById('game-info');
+    const gameTitle = document.getElementById('game-title');
+    const gamePlayers = document.getElementById('game-players');
+    const gameDuration = document.getElementById('game-duration');
+    const numeroGiocatoriContainer = document.getElementById('numero-giocatori-container');
+    const numeroGiocatoriSelect = document.getElementById('numero_giocatori_select');
+    const gameSearch = document.getElementById('game-search');
+    const clearGameSearch = document.getElementById('clear-game-search');
+    const gameCountText = document.getElementById('game-count-text');
+    const form = document.querySelector('form');
+    
+    // Handle form submission to sync input value to select
+    form.addEventListener('submit', function(e) {
+        const inputWrapper = document.getElementById('numero-giocatori-input-wrapper');
+        const input = document.getElementById('numero_giocatori_input');
+        
+        // If input is visible, copy its value to the hidden select
+        if (inputWrapper.style.display !== 'none') {
+            const value = parseInt(input.value) || 0;
+            
+            // Clear select and add the input value as an option
+            numeroGiocatoriSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = value;
+            option.selected = true;
+            numeroGiocatoriSelect.appendChild(option);
+        }
+    });
+    
+    // Store all options for filtering
+    const allOptions = Array.from(giocoSelect.options);
+    const totalGames = allOptions.length - 1; // Exclude "Seleziona un gioco..."
+    
+    // Game search filter
+    gameSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        // Show/hide clear button
+        clearGameSearch.style.display = searchTerm ? 'block' : 'none';
+        
+        // Filter options
+        let visibleCount = 0;
+        allOptions.forEach(option => {
+            if (option.value === '0') {
+                option.style.display = '';
+                return;
+            }
+            
+            const text = option.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                option.style.display = '';
+                visibleCount++;
+            } else {
+                option.style.display = 'none';
+            }
+        });
+        
+        // Update count text
+        if (searchTerm) {
+            gameCountText.innerHTML = `<i class="bi bi-funnel-fill"></i> Trovati ${visibleCount} di ${totalGames} giochi`;
+        } else {
+            gameCountText.innerHTML = '<i class="bi bi-info-circle"></i> Solo giochi attualmente disponibili sono elencati';
+        }
+        
+        // Reset selection if current selection is not visible
+        const currentOption = giocoSelect.options[giocoSelect.selectedIndex];
+        if (currentOption && currentOption.style.display === 'none') {
+            giocoSelect.value = '0';
+            gameInfo.style.display = 'none';
+            numeroGiocatoriContainer.style.display = 'none';
+        }
+    });
+    
+    // Clear search button
+    clearGameSearch.addEventListener('click', function() {
+        gameSearch.value = '';
+        gameSearch.dispatchEvent(new Event('input'));
+        gameSearch.focus();
+    });
+    
+    // Focus search on page load
+    gameSearch.focus();
+    
+    // Game selection change
+    giocoSelect.addEventListener('change', function() {
+        const giocoId = this.value;
+        
+        if (!giocoId || giocoId === '0') {
+            gameInfo.style.display = 'none';
+            numeroGiocatoriContainer.style.display = 'none';
+            return;
+        }
+        
+        // Fetch game details
+        fetch(`/api/gioco/${giocoId}`)
+            .then(response => response.json())
+            .then(data => {
+                gameTitle.textContent = data.titolo;
+                gamePlayers.textContent = data.numero_giocatori || 'Non specificato';
+                gameDuration.textContent = data.durata || 'Non specificata';
+                gameInfo.style.display = 'block';
+                
+                const selectWrapper = document.getElementById('numero-giocatori-select-wrapper');
+                const inputWrapper = document.getElementById('numero-giocatori-input-wrapper');
+                const input = document.getElementById('numero_giocatori_input');
+                const hint = document.getElementById('numero-giocatori-hint');
+                
+                // Check if player count has a "+" symbol
+                const playerRange = data.numero_giocatori ? data.numero_giocatori.toString() : '';
+                
+                if (playerRange.includes('+')) {
+                    // Extract minimum number (e.g., "4+" -> 4)
+                    const minPlayers = parseInt(playerRange.replace('+', '').trim());
+                    
+                    // Hide select, show input
+                    selectWrapper.style.display = 'none';
+                    inputWrapper.style.display = 'block';
+                    
+                    // Configure input
+                    input.min = minPlayers;
+                    input.value = minPlayers;
+                    input.placeholder = `Minimo ${minPlayers} giocatori`;
+                    
+                    hint.innerHTML = `<i class="bi bi-people"></i> Inserisci il numero di giocatori (minimo ${minPlayers})`;
+                } else {
+                    // Show select, hide input
+                    selectWrapper.style.display = 'block';
+                    inputWrapper.style.display = 'none';
+                    
+                    hint.innerHTML = '<i class="bi bi-people"></i> Quante persone giocheranno effettivamente?';
+                    
+                    // Populate player count select based on game's player range
+                    numeroGiocatoriSelect.innerHTML = '<option value="0">Non specificato</option>';
+                    
+                    if (playerRange) {
+                        // Check for slash format (e.g., "1-4/6" or "2-4/6/8")
+                        if (playerRange.includes('/')) {
+                            const parts = playerRange.split('/');
+                            const numbers = new Set();
+                            
+                            parts.forEach(part => {
+                                part = part.trim();
+                                // Check if it's a range (e.g., "1-4")
+                                const rangeMatch = part.match(/(\d+)\s*-\s*(\d+)/);
+                                if (rangeMatch) {
+                                    const min = parseInt(rangeMatch[1]);
+                                    const max = parseInt(rangeMatch[2]);
+                                    for (let i = min; i <= max; i++) {
+                                        numbers.add(i);
+                                    }
+                                } else {
+                                    // Single number
+                                    const num = parseInt(part);
+                                    if (!isNaN(num)) {
+                                        numbers.add(num);
+                                    }
+                                }
+                            });
+                            
+                            // Sort and add options
+                            Array.from(numbers).sort((a, b) => a - b).forEach(num => {
+                                const option = document.createElement('option');
+                                option.value = num;
+                                option.textContent = num;
+                                numeroGiocatoriSelect.appendChild(option);
+                            });
+                        } else {
+                            // Parse standard range (e.g., "2-4", "1-6", "4")
+                            const match = playerRange.match(/(\d+)(?:\s*-\s*(\d+))?/);
+                            
+                            if (match) {
+                                const min = parseInt(match[1]);
+                                const max = match[2] ? parseInt(match[2]) : min;
+                                
+                                // Add options from min to max
+                                for (let i = min; i <= max; i++) {
+                                    const option = document.createElement('option');
+                                    option.value = i;
+                                    option.textContent = i;
+                                    numeroGiocatoriSelect.appendChild(option);
+                                }
+                            } else {
+                                // If can't parse, add generic options
+                                for (let i = 1; i <= 20; i++) {
+                                    const option = document.createElement('option');
+                                    option.value = i;
+                                    option.textContent = i;
+                                    numeroGiocatoriSelect.appendChild(option);
+                                }
+                            }
+                        }
+                    } else {
+                        // No player info, add generic options
+                        for (let i = 1; i <= 20; i++) {
+                            const option = document.createElement('option');
+                            option.value = i;
+                            option.textContent = i;
+                            numeroGiocatoriSelect.appendChild(option);
+                        }
+                    }
+                }
+                
+                numeroGiocatoriContainer.style.display = 'block';
+                
+                // Show and populate insegnante dropdown if there are soci who can explain this game
+                const insegnanteContainer = document.getElementById('insegnante-container');
+                const insegnanteSelect = document.getElementById('socio_insegnante_select');
+                
+                if (data.soci && data.soci.length > 0) {
+                    // Clear and repopulate select
+                    insegnanteSelect.innerHTML = '<option value="0">Nessuno</option>';
+                    data.soci.forEach(socio => {
+                        const option = document.createElement('option');
+                        option.value = socio.id;
+                        option.textContent = socio.nome_completo;
+                        insegnanteSelect.appendChild(option);
+                    });
+                    insegnanteContainer.style.display = 'block';
+                } else {
+                    insegnanteContainer.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Errore caricamento info gioco:', error);
+                gameInfo.style.display = 'none';
+                numeroGiocatoriContainer.style.display = 'none';
+            });
+    });
+});
+</script>
+{% endblock %}

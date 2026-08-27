@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">{{ title }}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.titolo.label(class="form-label") }}
+                        {{ form.titolo(class="form-control" + (" is-invalid" if form.titolo.errors else "")) }}
+                        {% if form.titolo.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.titolo.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.master.label(class="form-label") }}
+                        {{ form.master(class="form-control" + (" is-invalid" if form.master.errors else "")) }}
+                        {% if form.master.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.master.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.descrizione.label(class="form-label") }}
+                        {{ form.descrizione(class="form-control", rows="4") }}
+                        <small class="form-text text-muted">Descrizione opzionale della sessione, avventura, ambientazione, ecc.</small>
+                        {% if form.descrizione.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.descrizione.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.data_sessione.label(class="form-label") }}
+                            {{ form.data_sessione(class="form-control" + (" is-invalid" if form.data_sessione.errors else ""), placeholder="AAAA-MM-GG (es. 2026-12-25)", type="date") }}
+                            <small class="form-text text-muted">Data della sessione (opzionale)</small>
+                            {% if form.data_sessione.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.data_sessione.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.orario.label(class="form-label") }}
+                            {{ form.orario(class="form-control" + (" is-invalid" if form.orario.errors else ""), placeholder="HH:MM (es. 20:30)", type="time") }}
+                            <small class="form-text text-muted">Orario della sessione (opzionale)</small>
+                            {% if form.orario.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.orario.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.immagine_path.label(class="form-label") }}
+                            {{ form.immagine_path(class="form-control" + (" is-invalid" if form.immagine_path.errors else ""), placeholder="https://...") }}
+                            <small class="form-text text-muted">URL immagine (opzionale)</small>
+                            {% if form.immagine_path.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.immagine_path.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.numero_min_giocatori.label(class="form-label") }}
+                            {{ form.numero_min_giocatori(class="form-control" + (" is-invalid" if form.numero_min_giocatori.errors else ""), min="1", max="50", id="numero_min_giocatori") }}
+                            {% if form.numero_min_giocatori.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.numero_min_giocatori.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.numero_max_giocatori.label(class="form-label") }}
+                            {{ form.numero_max_giocatori(class="form-control" + (" is-invalid" if form.numero_max_giocatori.errors else ""), min="1", max="50", id="numero_max_giocatori") }}
+                            {% if form.numero_max_giocatori.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.numero_max_giocatori.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Verranno creati esattamente tanti campi giocatori quanti il numero massimo</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Giocatori Iscritti</label>
+                        <div id="giocatoriContainer">
+                            <!-- Dynamic player fields will be added here by JavaScript -->
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> I campi vengono generati automaticamente in base al numero massimo di giocatori. Lascia vuoti i campi per i posti non ancora occupati.
+                        </small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('gdr_lista') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Annulla
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Salva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if gdr is defined %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Informazioni Sessione</h5>
+                <ul class="list-unstyled mb-0">
+                    <li><strong>Posti occupati:</strong> {{ gdr.num_giocatori_iscritti }}/{{ gdr.numero_max_giocatori }}</li>
+                    <li><strong>Posti disponibili:</strong> {{ gdr.posti_disponibili }}</li>
+                    <li>
+                        <strong>Stato:</strong> 
+                        {% if gdr.is_completo %}
+                            <span class="badge bg-danger">Completo</span>
+                        {% elif gdr.can_start %}
+                            <span class="badge bg-success">Pronto per iniziare</span>
+                        {% else %}
+                            <span class="badge bg-warning">In attesa di giocatori</span>
+                        {% endif %}
+                    </li>
+                    <li><strong>Data creazione:</strong> {{ gdr.data_creazione.strftime('%d/%m/%Y %H:%M') }}</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Store existing player names for edit mode
+const existingPlayers = {{ (gdr.get_giocatori_list() if gdr is defined else []) | tojson }};
+
+function updatePlayerFields() {
+    const maxGiocatori = parseInt(document.getElementById('numero_max_giocatori').value) || 0;
+    const container = document.getElementById('giocatoriContainer');
+    
+    if (maxGiocatori < 1 || maxGiocatori > 50) {
+        container.innerHTML = '<p class="text-muted"><i class="bi bi-exclamation-triangle"></i> Inserisci un numero massimo di giocatori valido (1-50)</p>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    for (let i = 0; i < maxGiocatori; i++) {
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'mb-2';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = `giocatore_${i}`;
+        input.className = 'form-control';
+        input.placeholder = `Giocatore ${i + 1} (opzionale)`;
+        input.maxLength = 100;
+        
+        // Pre-fill with existing data in edit mode
+        if (existingPlayers[i]) {
+            input.value = existingPlayers[i];
+        }
+        
+        fieldDiv.appendChild(input);
+        container.appendChild(fieldDiv);
+    }
+}
+
+// Initialize player fields on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updatePlayerFields();
+    
+    // Update player fields when max number changes
+    document.getElementById('numero_max_giocatori').addEventListener('change', updatePlayerFields);
+    document.getElementById('numero_max_giocatori').addEventListener('input', updatePlayerFields);
+});
+</script>
+{% endblock %}
