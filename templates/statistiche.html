@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiche - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Fullscreen adjustments */
+    :fullscreen body,
+    :-webkit-full-screen body,
+    :-moz-full-screen body,
+    html:fullscreen body,
+    html:-webkit-full-screen body,
+    html:-moz-full-screen body,
+    body.is-fullscreen {
+        padding: 80px 100px !important;
+        box-sizing: border-box !important;
+    }
+    
+    :fullscreen .stats-container,
+    :-webkit-full-screen .stats-container,
+    :-moz-full-screen .stats-container,
+    html:fullscreen .stats-container,
+    html:-webkit-full-screen .stats-container,
+    html:-moz-full-screen .stats-container,
+    body.is-fullscreen .stats-container {
+        min-height: 100vh !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    :fullscreen #statsCarousel,
+    :-webkit-full-screen #statsCarousel,
+    :-moz-full-screen #statsCarousel,
+    html:fullscreen #statsCarousel,
+    html:-webkit-full-screen #statsCarousel,
+    html:-moz-full-screen #statsCarousel,
+    body.is-fullscreen #statsCarousel {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    :fullscreen .carousel-inner,
+    :-webkit-full-screen .carousel-inner,
+    :-moz-full-screen .carousel-inner,
+    html:fullscreen .carousel-inner,
+    html:-webkit-full-screen .carousel-inner,
+    html:-moz-full-screen .carousel-inner,
+    body.is-fullscreen .carousel-inner {
+        padding: 0 !important;
+    }
+    
+    :fullscreen .row,
+    :-webkit-full-screen .row,
+    :-moz-full-screen .row,
+    html:fullscreen .row,
+    html:-webkit-full-screen .row,
+    html:-moz-full-screen .row,
+    body.is-fullscreen .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    :fullscreen .col-md-6,
+    :fullscreen .col-md-12,
+    :-webkit-full-screen .col-md-6,
+    :-webkit-full-screen .col-md-12,
+    :-moz-full-screen .col-md-6,
+    :-moz-full-screen .col-md-12,
+    html:fullscreen .col-md-6,
+    html:fullscreen .col-md-12,
+    html:-webkit-full-screen .col-md-6,
+    html:-webkit-full-screen .col-md-12,
+    html:-moz-full-screen .col-md-6,
+    html:-moz-full-screen .col-md-12,
+    body.is-fullscreen .col-md-6,
+    body.is-fullscreen .col-md-12 {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    
+    .stats-container {
+        min-height: calc(100vh - 100px);
+        padding: 20px 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .stat-mega-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .stat-mega-number {
+        font-size: 120px;
+        font-weight: 900;
+        line-height: 1;
+        margin: 15px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stat-mega-label {
+        font-size: 32px;
+        font-weight: 700;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-top: 8px;
+    }
+    
+    .stat-mega-sublabel {
+        font-size: 20px;
+        color: #999;
+        font-weight: 500;
+        margin-top: 8px;
+    }
+    
+    .game-mega-image {
+        width: 250px;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 20px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.4);
+        margin: 15px auto;
+        border: 4px solid #fff;
+    }
+    
+    .game-mega-title {
+        font-size: 32px;
+        font-weight: 900;
+        color: #333;
+        margin: 12px 0;
+        line-height: 1.2;
+    }
+    
+    .game-mega-subtitle {
+        font-size: 20px;
+        color: #667eea;
+        font-weight: 700;
+    }
+    
+    .mega-icon {
+        font-size: 60px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .badge-mega {
+        font-size: 20px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+    }
+</style>
+
+<div class="stats-container">
+    <div class="row mb-3">
+        <div class="col-md-12 text-center">
+            <h1 class="text-white mb-0" style="font-size: 36px; font-weight: 800;">
+                <i class="bi bi-graph-up"></i> STATISTICHE
+            </h1>
+        </div>
+    </div>
+    
+    <!-- MAXI CAROUSEL per Monitor Secondario -->
+    <div class="row">
+        <div class="col-md-12">
+            <div id="statsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-inner">
+                    <!-- Slide 1: Totale Prestiti e Prestiti Attivi -->
+                    <div class="carousel-item active">
+                        <div class="row h-100">
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-mega-card" style="min-height: 500px;">
+                                    <div class="mega-icon">
+                                        <i class="bi bi-clipboard-data-fill"></i>
+                                    </div>
+                                    <div class="stat-mega-number">{{ totale_prestiti }}</div>
+                                    <div class="stat-mega-label">PRESTITI TOTALI</div>
+                                    <div class="stat-mega-sublabel">Dal lancio del sistema</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-mega-card" style="min-height: 500px;">
+                                    <div class="mega-icon">
+                                        <i class="bi bi-hourglass-split"></i>
+                                    </div>
+                                    <div class="stat-mega-number">{{ prestiti_attivi }}</div>
+                                    <div class="stat-mega-label">PRESTITI ATTIVI</div>
+                                    <div class="stat-mega-sublabel">In corso ora</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 2: Statistiche Giocatori e Tempo -->
+                    <div class="carousel-item">
+                        <div class="row h-100">
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-mega-card" style="min-height: 500px;">
+                                    <div class="mega-icon">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+                                    <div class="stat-mega-number">{{ totale_giocatori }}</div>
+                                    <div class="stat-mega-label">GIOCATORI TOTALI</div>
+                                    <div class="stat-mega-sublabel">Persone venute a giocare</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-mega-card" style="min-height: 500px;">
+                                    <div class="mega-icon">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="stat-mega-number">{{ media_giocatori }}</div>
+                                    <div class="stat-mega-label">MEDIA GIOCATORI</div>
+                                    <div class="stat-mega-sublabel">Per partita</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 3: Durata Media -->
+                    <div class="carousel-item">
+                        <div class="stat-mega-card">
+                            <div class="mega-icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="stat-mega-number">
+                                {% if durata_media < 24 %}
+                                    {{ "%.1f"|format(durata_media) }}
+                                {% else %}
+                                    {{ "%.1f"|format(durata_media / 24) }}
+                                {% endif %}
+                            </div>
+                            <div class="stat-mega-label">
+                                {% if durata_media < 24 %}
+                                    ORE
+                                {% else %}
+                                    GIORNI
+                                {% endif %}
+                            </div>
+                            <div class="stat-mega-sublabel">Durata media prestito</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 5: Gioco Più Prestato -->
+                    {% if giochi_piu_prestati %}
+                    <div class="carousel-item">
+                        <div class="stat-mega-card" style="flex-direction: row; align-items: center; padding: 60px 80px; min-height: 500px;">
+                            <div style="flex: 0 0 320px; margin-right: 50px;">
+                                {% if giochi_piu_prestati[0].immagine_path %}
+                                <img src="{{ giochi_piu_prestati[0].immagine_path }}" 
+                                     alt="{{ giochi_piu_prestati[0].titolo }}" 
+                                     style="width: 320px; height: 320px; object-fit: cover; border-radius: 20px; box-shadow: 0 10px 35px rgba(0,0,0,0.4); border: 4px solid #fff;"
+                                     onerror="this.src='https://placehold.co/320x320/667eea/white?text=Gioco'">
+                                {% else %}
+                                <img src="https://placehold.co/320x320/667eea/white?text=Gioco" 
+                                     alt="{{ giochi_piu_prestati[0].titolo }}" 
+                                     style="width: 320px; height: 320px; object-fit: cover; border-radius: 20px; box-shadow: 0 10px 35px rgba(0,0,0,0.4); border: 4px solid #fff;">
+                                {% endif %}
+                            </div>
+                            <div style="flex: 1; text-align: left;">
+                                <div class="mega-icon" style="margin-bottom: 20px; font-size: 60px;">
+                                    <i class="bi bi-trophy-fill"></i>
+                                </div>
+                                <div class="stat-mega-label" style="margin-bottom: 15px; font-size: 28px;">GIOCO PIÙ PRESTATO</div>
+                                <div class="game-mega-title" style="font-size: 42px; font-weight: 900; color: #333; margin: 15px 0;">{{ giochi_piu_prestati[0].titolo }}</div>
+                                <div class="game-mega-subtitle">
+                                    <span class="badge bg-primary badge-mega" style="font-size: 26px; padding: 12px 24px;">
+                                        <i class="bi bi-star-fill"></i> {{ giochi_piu_prestati[0].num_prestiti }} prestiti
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Slide 6: Partita Più Lunga -->
+                    {% if prestito_piu_lungo %}
+                    <div class="carousel-item">
+                        <div class="stat-mega-card" style="flex-direction: row; align-items: center; padding: 60px 80px; min-height: 500px;">
+                            <div style="flex: 0 0 320px; margin-right: 50px;">
+                                {% if prestito_piu_lungo.gioco.immagine_path %}
+                                <img src="{{ prestito_piu_lungo.gioco.immagine_path }}" 
+                                     alt="{{ prestito_piu_lungo.gioco.titolo }}" 
+                                     style="width: 320px; height: 320px; object-fit: cover; border-radius: 20px; box-shadow: 0 10px 35px rgba(0,0,0,0.4); border: 4px solid #fff;"
+                                     onerror="this.src='https://placehold.co/320x320/764ba2/white?text=Gioco'">
+                                {% else %}
+                                <img src="https://placehold.co/320x320/764ba2/white?text=Gioco" 
+                                     alt="{{ prestito_piu_lungo.gioco.titolo }}" 
+                                     style="width: 320px; height: 320px; object-fit: cover; border-radius: 20px; box-shadow: 0 10px 35px rgba(0,0,0,0.4); border: 4px solid #fff;">
+                                {% endif %}
+                            </div>
+                            <div style="flex: 1; text-align: left;">
+                                <div class="mega-icon" style="margin-bottom: 20px; font-size: 60px;">
+                                    <i class="bi bi-alarm-fill"></i>
+                                </div>
+                                <div class="stat-mega-label" style="margin-bottom: 15px; font-size: 28px;">PARTITA PIÙ LUNGA</div>
+                                <div class="game-mega-title" style="font-size: 42px; font-weight: 900; color: #333; margin: 15px 0;">{{ prestito_piu_lungo.gioco.titolo }}</div>
+                                <div class="game-mega-subtitle">
+                                    <span class="badge bg-warning badge-mega" style="font-size: 26px; padding: 12px 24px;">
+                                        <i class="bi bi-stopwatch"></i> {{ prestito_piu_lungo.durata_formattata }}
+                                    </span>
+                                </div>
+                                <div class="stat-mega-sublabel" style="font-size: 22px; margin-top: 15px;">
+                                    <i class="bi bi-person-fill"></i> {{ prestito_piu_lungo.nome_completo }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Slide 7: Sessioni GDR Oggi -->
+                    {% if sessioni_gdr_oggi %}
+                    <div class="carousel-item">
+                        <div class="stat-mega-card" style="padding: 40px 60px; min-height: 500px; overflow-y: auto;">
+                            <div class="mega-icon" style="font-size: 60px; margin-bottom: 20px;">
+                                <i class="bi bi-dice-6-fill"></i>
+                            </div>
+                            <div class="stat-mega-label" style="margin-bottom: 30px; font-size: 32px;">GIOCHI DI RUOLO OGGI</div>
+                            <div class="stat-mega-sublabel" style="font-size: 20px; margin-bottom: 30px;">{{ sessioni_gdr_oggi|length }} sessione{% if sessioni_gdr_oggi|length != 1 %}i{% endif %} in programma</div>
+                            
+                            <div class="row" style="width: 100%;">
+                                {% for gdr in sessioni_gdr_oggi %}
+                                <div class="col-md-6 mb-3">
+                                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 25px; color: white; text-align: left; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+                                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                            {% if gdr.immagine_path %}
+                                            <img src="{{ gdr.immagine_path }}" alt="{{ gdr.titolo }}" 
+                                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px; border: 2px solid white;"
+                                                 onerror="this.style.display='none'">
+                                            {% endif %}
+                                            <div>
+                                                <div style="font-size: 22px; font-weight: 700;">{{ gdr.titolo }}</div>
+                                                <div style="font-size: 16px; opacity: 0.9;"><i class="bi bi-person-badge"></i> {{ gdr.master }}</div>
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 18px; margin-bottom: 10px;">
+                                            {% if gdr.data_sessione %}
+                                            <i class="bi bi-calendar"></i> {{ gdr.data_sessione.strftime('%d/%m/%Y') }}
+                                            {% endif %}
+                                            {% if gdr.orario %}
+                                            <span style="margin-left: {% if gdr.data_sessione %}10{% else %}0{% endif %}px;">
+                                                <i class="bi bi-clock"></i> {{ gdr.orario.strftime('%H:%M') }}
+                                            </span>
+                                            {% endif %}
+                                            <span style="margin-left: 15px;">
+                                                <i class="bi bi-people-fill"></i> {{ gdr.num_giocatori_iscritti }}/{{ gdr.numero_max_giocatori }}
+                                            </span>
+                                        </div>
+                                        {% if gdr.descrizione %}
+                                        <div style="font-size: 14px; opacity: 0.85; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; margin-top: 10px;">
+                                            {{ gdr.descrizione[:80] }}{% if gdr.descrizione|length > 80 %}...{% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

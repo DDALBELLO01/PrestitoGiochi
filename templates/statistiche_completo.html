@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiche Completo - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Fullscreen adjustments */
+    :fullscreen .stats-complete-container,
+    :-webkit-full-screen .stats-complete-container,
+    :-moz-full-screen .stats-complete-container,
+    html:fullscreen .stats-complete-container,
+    html:-webkit-full-screen .stats-complete-container,
+    html:-moz-full-screen .stats-complete-container,
+    body.is-fullscreen .stats-complete-container {
+        min-height: 100vh !important;
+        padding: 40px 20px !important;
+    }
+    
+    .stats-complete-container {
+        min-height: calc(100vh - 100px);
+        padding: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        height: 100%;
+        transition: transform 0.2s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+    }
+    
+    .stat-number {
+        font-size: 48px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 10px 0;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        font-weight: 700;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 5px;
+    }
+    
+    .stat-icon {
+        font-size: 36px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+    
+    .section-title {
+        color: white;
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    
+    .game-item {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .game-rank {
+        font-size: 28px;
+        font-weight: 900;
+        color: #667eea;
+        margin-right: 15px;
+        min-width: 40px;
+    }
+    
+    .game-image-small {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+    }
+    
+    .game-info {
+        flex: 1;
+    }
+    
+    .game-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+    }
+    
+    .game-count {
+        font-size: 16px;
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .person-item {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .person-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+        flex: 1;
+    }
+    
+    .person-count {
+        font-size: 20px;
+        font-weight: 900;
+        color: #764ba2;
+        margin-left: 15px;
+    }
+</style>
+
+<div class="stats-complete-container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <h1 class="text-white mb-0" style="font-size: 36px; font-weight: 800;">
+                <i class="bi bi-graph-up"></i> STATISTICHE COMPLETE
+            </h1>
+        </div>
+    </div>
+    
+    <!-- Overview Stats - Row 1 -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-clipboard-data-fill"></i></div>
+                <div class="stat-number">{{ totale_prestiti }}</div>
+                <div class="stat-label">Prestiti Totali</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-number">{{ prestiti_attivi }}</div>
+                <div class="stat-label">Prestiti Attivi</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-number">{{ prestiti_completati }}</div>
+                <div class="stat-label">Prestiti Completati</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-controller"></i></div>
+                <div class="stat-number">{{ totale_giochi }}</div>
+                <div class="stat-label">Giochi Totali</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Players & Game Stats - Row 2 -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-number">{{ totale_giocatori }}</div>
+                <div class="stat-label">Giocatori Totali</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-person-fill"></i></div>
+                <div class="stat-number">{{ media_giocatori }}</div>
+                <div class="stat-label">Media Giocatori</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+                <div class="stat-number">
+                    {% if durata_media < 24 %}
+                        {{ "%.1f"|format(durata_media) }}h
+                    {% else %}
+                        {{ "%.1f"|format(durata_media / 24) }}g
+                    {% endif %}
+                </div>
+                <div class="stat-label">Durata Media</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-check2-square"></i></div>
+                <div class="stat-number">{{ giochi_disponibili }}</div>
+                <div class="stat-label">Giochi Disponibili</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Games and People -->
+    <div class="row mb-4">
+        <!-- Top 10 Giochi Più Prestati -->
+        <div class="col-lg-6 mb-4">
+            <h2 class="section-title"><i class="bi bi-trophy-fill"></i> Top 10 Giochi Più Prestati</h2>
+            {% if giochi_piu_prestati %}
+                {% for item in giochi_piu_prestati %}
+                <div class="game-item">
+                    <div class="game-rank">#{{ loop.index }}</div>
+                    {% if item.immagine_path %}
+                    <img src="{{ item.immagine_path }}" alt="{{ item.titolo }}" class="game-image-small"
+                         onerror="this.src='https://placehold.co/60x60/667eea/white?text={{ loop.index }}'">
+                    {% else %}
+                    <img src="https://placehold.co/60x60/667eea/white?text={{ loop.index }}" alt="{{ item.titolo }}" class="game-image-small">
+                    {% endif %}
+                    <div class="game-info">
+                        <div class="game-title">{{ item.titolo }}</div>
+                    </div>
+                    <div class="game-count">
+                        <i class="bi bi-star-fill"></i> {{ item.num_prestiti }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="stat-card">
+                    <p class="text-muted">Nessun dato disponibile</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Top 10 Persone -->
+        <div class="col-lg-6 mb-4">
+            <h2 class="section-title"><i class="bi bi-people-fill"></i> Top 10 Giocatori</h2>
+            {% if persone_piu_prestiti %}
+                {% for persona in persone_piu_prestiti %}
+                <div class="person-item">
+                    <div class="game-rank">#{{ loop.index }}</div>
+                    <div class="person-name">
+                        <i class="bi bi-person-circle"></i> {{ persona.nome }} {{ persona.cognome }}
+                    </div>
+                    <div class="person-count">
+                        {{ persona.num_prestiti }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="stat-card">
+                    <p class="text-muted">Nessun dato disponibile</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Longest Game -->
+    {% if prestito_piu_lungo %}
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="section-title"><i class="bi bi-alarm-fill"></i> Partita Più Lunga</h2>
+            <div class="stat-card" style="text-align: left;">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        {% if prestito_piu_lungo.gioco.immagine_path %}
+                        <img src="{{ prestito_piu_lungo.gioco.immagine_path }}" alt="{{ prestito_piu_lungo.gioco.titolo }}"
+                             style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);"
+                             onerror="this.src='https://placehold.co/150x150/764ba2/white?text=Game'">
+                        {% else %}
+                        <img src="https://placehold.co/150x150/764ba2/white?text=Game" alt="{{ prestito_piu_lungo.gioco.titolo }}"
+                             style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h3 style="font-size: 32px; font-weight: 900; color: #333; margin-bottom: 15px;">
+                            {{ prestito_piu_lungo.gioco.titolo }}
+                        </h3>
+                        <p style="font-size: 24px; color: #764ba2; font-weight: 700; margin-bottom: 10px;">
+                            <i class="bi bi-stopwatch"></i> {{ prestito_piu_lungo.durata_formattata }}
+                        </p>
+                        <p style="font-size: 18px; color: #666; margin-bottom: 0;">
+                            <i class="bi bi-person-fill"></i> {{ prestito_piu_lungo.nome_completo }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Sessioni GDR Oggi -->
+    {% if sessioni_gdr_oggi %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h2 class="section-title"><i class="bi bi-dice-6-fill"></i> Giochi di Ruolo - Oggi</h2>
+            <div class="row">
+                {% for gdr in sessioni_gdr_oggi %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="stat-card" style="height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        {% if gdr.immagine_path %}
+                        <div style="margin-bottom: 15px;">
+                            <img src="{{ gdr.immagine_path }}" alt="{{ gdr.titolo }}" 
+                                 style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px; border: 2px solid white;"
+                                 onerror="this.style.display='none'">
+                        </div>
+                        {% endif %}
+                        <h4 style="font-weight: 700; margin-bottom: 10px; font-size: 22px;">{{ gdr.titolo }}</h4>
+                        <div style="margin-bottom: 8px; font-size: 16px;">
+                            <i class="bi bi-person-badge"></i> <strong>Master:</strong> {{ gdr.master }}
+                        </div>
+                        {% if gdr.data_sessione or gdr.orario %}
+                        <div style="margin-bottom: 8px; font-size: 18px; font-weight: 600;">
+                            {% if gdr.data_sessione %}
+                            <i class="bi bi-calendar-fill"></i> {{ gdr.data_sessione.strftime('%d/%m/%Y') }}
+                            {% endif %}
+                            {% if gdr.orario %}
+                            <span style="margin-left: {% if gdr.data_sessione %}10{% else %}0{% endif %}px;">
+                                <i class="bi bi-clock-fill"></i> {{ gdr.orario.strftime('%H:%M') }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        <div style="margin-bottom: 8px; font-size: 16px;">
+                            <i class="bi bi-people-fill"></i> {{ gdr.num_giocatori_iscritti }}/{{ gdr.numero_max_giocatori }} giocatori
+                        </div>
+                        {% if gdr.descrizione %}
+                        <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; margin-top: 10px; font-size: 14px; opacity: 0.9;">
+                            {{ gdr.descrizione[:100] }}{% if gdr.descrizione|length > 100 %}...{% endif %}
+                        </div>
+                        {% endif %}
+                        {% if gdr.get_giocatori_list() %}
+                        <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; margin-top: 10px;">
+                            <strong style="font-size: 14px;">Giocatori iscritti:</strong>
+                            <ul style="list-style: none; padding-left: 0; margin-top: 5px; font-size: 13px;">
+                                {% for nome in gdr.get_giocatori_list()[:5] %}
+                                <li><i class="bi bi-check-circle-fill"></i> {{ nome }}</li>
+                                {% endfor %}
+                                {% if gdr.get_giocatori_list()|length > 5 %}
+                                <li>...e altri {{ gdr.get_giocatori_list()|length - 5 }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

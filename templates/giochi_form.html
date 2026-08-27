@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Il Sentiero dei Draghi{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('giochi_lista') }}">Giochi</a></li>
+                <li class="breadcrumb-item active">{{ title }}</li>
+            </ol>
+        </nav>
+        <h1><i class="bi bi-controller text-primary"></i> {{ title }}</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.titolo.label(class="form-label") }}
+                        {{ form.titolo(class="form-control" + (" is-invalid" if form.titolo.errors else "")) }}
+                        {% if form.titolo.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.titolo.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.editore.label(class="form-label") }}
+                            {{ form.editore(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.anno.label(class="form-label") }}
+                            {{ form.anno(class="form-control", placeholder="es. 2020") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.numero_giocatori.label(class="form-label") }}
+                            {{ form.numero_giocatori(class="form-control", placeholder="es. 2-4") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.durata.label(class="form-label") }}
+                            {{ form.durata(class="form-control", placeholder="es. 30-60 min") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.soci_ids.label(class="form-label") }}
+                            {{ form.soci_ids(class="form-select", multiple=true, size=5) }}
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> 
+                                Tieni premuto Ctrl (Cmd su Mac) per selezionare più soci
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.difficolta.label(class="form-label") }}
+                            {{ form.difficolta(class="form-select") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.immagine_path.label(class="form-label") }}
+                        {{ form.immagine_path(class="form-control", placeholder="https://esempio.com/immagine.jpg") }}
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> 
+                            URL dell'immagine del gioco (opzionale)
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {% if ha_prestito_attivo %}
+                            {{ form.disponibile(class="form-check-input", disabled=true) }}
+                            {% else %}
+                            {{ form.disponibile(class="form-check-input") }}
+                            {% endif %}
+                            {{ form.disponibile.label(class="form-check-label") }}
+                        </div>
+                        {% if ha_prestito_attivo %}
+                        <div class="alert alert-warning mt-2 mb-0">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>Gioco in prestito!</strong><br>
+                            Questo gioco è attualmente in prestito. Non è possibile modificare la disponibilità fino alla restituzione.
+                            <br>
+                            <small>
+                                Prestato a: <strong>{{ ha_prestito_attivo.nome_completo }}</strong><br>
+                                Data prestito: {{ ha_prestito_attivo.data_prestito.strftime('%d/%m/%Y %H:%M') }}<br>
+                                Durata: {{ ha_prestito_attivo.durata_formattata }}
+                            </small>
+                        </div>
+                        {% else %}
+                        <small class="form-text text-muted">
+                            Indica se il gioco è attualmente disponibile per il prestito
+                        </small>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('giochi_lista') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annulla
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Salva Gioco
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

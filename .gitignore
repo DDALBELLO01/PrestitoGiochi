@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Database
+*.db-journal
+*.db-shm
+*.db-wal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+build_log.txt
+
+# Test files
+test_*.py
+check_*.py
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+
+# Distribution folder
+sentiero dei draghi - prestito/
+
+# Excel import files
+*.xlsx
+*.xls
+
+# Builds
+*.zip
+Il Sentiero dei Draghi - Prestito Giochi/
