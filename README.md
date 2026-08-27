@@ -1,5 +1,15 @@
 # Istruzioni per l'uso - Il Sentiero dei Draghi
 
+## Avvio su Wasmer
+
+Il progetto include `app.yaml` e `Procfile` per l'avvio come applicazione Flask tramite Gunicorn.
+
+1. Carica il progetto su Wasmer e avvia il deploy usando `app.yaml`.
+2. Imposta `SECRET_KEY` su un valore segreto personale nelle variabili d'ambiente del servizio.
+3. Per un database persistente, configura `DATABASE_PATH` su un volume persistente oppure usa `DATABASE_URL` con un database supportato.
+
+Comando di avvio: `gunicorn --bind 0.0.0.0:$PORT app:app`
+
 ## 📖 Guida all'uso del software di gestione prestiti giochi
 
 ---

@@ -15,8 +15,16 @@ import requests
 from xml.etree import ElementTree
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prestiti.db'
+base_dir = os.path.abspath(os.path.dirname(__file__))
+database_path = os.environ.get('DATABASE_PATH', os.path.join(base_dir, 'instance', 'prestiti.db'))
+database_dir = os.path.dirname(database_path)
+if database_dir:
+    os.makedirs(database_dir, exist_ok=True)
+
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', f'sqlite:///{database_path}'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['BGG_API_TOKEN'] = os.environ.get('BGG_API_TOKEN', '').strip()
 
@@ -1047,4 +1055,8 @@ def page_not_found(e):
 # ============= RUN APPLICATION =============
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(
+        debug=os.environ.get('FLASK_DEBUG', '').lower() == 'true',
+        host='0.0.0.0',
+        port=int(os.environ.get('PORT', '5000'))
+    )
