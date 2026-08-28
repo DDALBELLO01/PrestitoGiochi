@@ -3,13 +3,15 @@ Main Flask application for board game lending system.
 """
 import os
 import sys
+import time
+from urllib.parse import quote_plus
 
 if os.path.isdir('/site-packages'):
     sys.path.insert(0, '/site-packages')
 
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, session
 from datetime import datetime, timedelta
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, text
 from models import db, Gioco, Socio, Prestito, GiocoRuolo
 from forms import GiocoForm, PrestitoForm, SocioForm, GiocoRuoloForm
 from io import BytesIO
@@ -34,9 +36,16 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', '').lower() == 'true'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', f'sqlite:///{database_path}'
-)
+database_url = os.environ.get('DATABASE_URL')
+if not database_url and os.environ.get('DB_HOST'):
+    database_url = (
+        'postgresql+pg8000://'
+        f"{quote_plus(os.environ.get('DB_USERNAME', ''))}:"
+        f"{quote_plus(os.environ.get('DB_PASSWORD', ''))}@"
+        f"{os.environ['DB_HOST']}:{os.environ.get('DB_PORT', '5432')}/"
+        f"{os.environ.get('DB_NAME', '')}"
+    )
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or f'sqlite:///{database_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['BGG_API_TOKEN'] = os.environ.get('BGG_API_TOKEN', '').strip()
 
@@ -235,6 +244,47 @@ def giochi_elimina(id):
     db.session.delete(gioco)
     db.session.commit()
     return redirect(url_for('giochi_lista'))
+
+
+@app.route('/giochi/<int:id>/duplica', methods=['POST'])
+def giochi_duplica(id):
+    """Duplicate a game for an additional physical copy."""
+    gioco = Gioco.query.get_or_404(id)
+    copia = Gioco(
+        titolo=gioco.titolo,
+        editore=gioco.editore,
+        anno=gioco.anno,
+        numero_giocatori=gioco.numero_giocatori,
+        durata=gioco.durata,
+        difficolta=gioco.difficolta,
+        immagine_path=gioco.immagine_path,
+        disponibile=True
+    )
+    copia.soci.extend(gioco.soci)
+    db.session.add(copia)
+    db.session.commit()
+    flash(f'È stata aggiunta una copia di "{gioco.titolo}".', 'success')
+    return redirect(url_for('giochi_lista'))
+
+
+def _synchronize_postgresql_sequences():
+    """Align PostgreSQL ID sequences with imported explicit IDs."""
+    if db.engine.dialect.name != 'postgresql':
+        return
+    for table in ('giochi', 'soci', 'prestiti', 'giochi_ruolo'):
+        try:
+            db.session.execute(text(
+                f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+                f"COALESCE((SELECT MAX(id) FROM {table}), 1), "
+                f"(SELECT COUNT(*) > 0 FROM {table}))"
+            ))
+        except Exception:
+            db.session.rollback()
+    db.session.commit()
+
+
+with app.app_context():
+    _synchronize_postgresql_sequences()
 
 
 # ============= ROUTES: SOCI (CRUD) =============
@@ -933,29 +983,38 @@ def scraping_giochi():
     if request.method == 'POST':
         aggiornati = 0
         non_trovati = []
+        giochi_selezionati = {
+            int(gioco_id) for gioco_id in request.form.getlist('giochi_selezionati')
+            if gioco_id.isdigit()
+        }
+        giochi_da_scrapare = [
+            gioco for gioco in giochi_da_completare
+            if gioco.id in giochi_selezionati
+        ]
+
+        if not giochi_da_scrapare:
+            flash('Seleziona almeno un gioco da elaborare.', 'warning')
+            return render_template('scraping_giochi.html', giochi=giochi_da_completare)
+
         try:
             headers = _bgg_headers()
-            for gioco in giochi_da_completare:
-                search_response = requests.get(
+            for gioco in giochi_da_scrapare:
+                search_response = _bgg_get(
                     'https://boardgamegeek.com/xmlapi2/search',
                     params={'query': gioco.titolo, 'type': 'boardgame'},
-                    headers=headers,
-                    timeout=15
+                    headers=headers
                 )
-                search_response.raise_for_status()
                 risultati = ElementTree.fromstring(search_response.content).findall('item')
                 if not risultati:
                     non_trovati.append(gioco.titolo)
                     continue
 
                 bgg_id = risultati[0].get('id')
-                detail_response = requests.get(
+                detail_response = _bgg_get(
                     'https://boardgamegeek.com/xmlapi2/thing',
                     params={'id': bgg_id},
-                    headers=headers,
-                    timeout=15
+                    headers=headers
                 )
-                detail_response.raise_for_status()
                 item = ElementTree.fromstring(detail_response.content).find('item')
                 if item is None:
                     non_trovati.append(gioco.titolo)
@@ -965,10 +1024,10 @@ def scraping_giochi():
                 primary_name = item.find("name[@type='primary']")
                 values = {
                     'editore': next((node.get('value') for node in item.findall('link[@type="boardgamepublisher"]')), None),
-                    'anno': item.findtext('yearpublished'),
-                    'numero_giocatori': _format_range(item.findtext('minplayers'), item.findtext('maxplayers')),
-                    'durata': _format_range(item.findtext('minplaytime'), item.findtext('maxplaytime'), ' min'),
-                    'difficolta': _format_difficulty(item.findtext('statistics/ratings/averageweight')),
+                    'anno': _parse_year(_xml_value(item, 'yearpublished')),
+                    'numero_giocatori': _format_range(_xml_value(item, 'minplayers'), _xml_value(item, 'maxplayers')),
+                    'durata': _format_range(_xml_value(item, 'minplaytime'), _xml_value(item, 'maxplaytime'), ' min'),
+                    'difficolta': _format_difficulty(_xml_value(item, 'statistics/ratings/averageweight')),
                     'immagine_path': item.findtext('image')
                 }
                 for campo, valore in values.items():
@@ -984,6 +1043,9 @@ def scraping_giochi():
                 flash('Nessun risultato trovato per: ' + ', '.join(non_trovati), 'warning')
         except RuntimeError as exc:
             flash(str(exc), 'error')
+        except BGGRateLimitError as exc:
+            db.session.commit()
+            flash(str(exc), 'warning')
         except requests.HTTPError as exc:
             if exc.response is not None and exc.response.status_code == 401:
                 flash('Token BoardGameGeek non valido o non autorizzato.', 'error')
@@ -998,6 +1060,32 @@ def scraping_giochi():
         giochi_da_completare = [gioco for gioco in giochi if any(not getattr(gioco, campo) for campo in metadati)]
 
     return render_template('scraping_giochi.html', giochi=giochi_da_completare)
+
+
+class BGGRateLimitError(Exception):
+    """Raised when BoardGameGeek keeps rejecting requests due to rate limits."""
+
+
+def _bgg_get(endpoint, params, headers):
+    """Request BGG data with a pause and retries for HTTP 429 responses."""
+    for attempt in range(3):
+        time.sleep(5)
+        response = requests.get(endpoint, params=params, headers=headers, timeout=15)
+        if response.status_code != 429:
+            response.raise_for_status()
+            return response
+
+        retry_after = response.headers.get('Retry-After')
+        try:
+            wait_seconds = min(max(float(retry_after), 5), 60) if retry_after else 15
+        except ValueError:
+            wait_seconds = 15
+        if attempt < 2:
+            time.sleep(wait_seconds)
+
+    raise BGGRateLimitError(
+        'BoardGameGeek sta limitando le richieste. Attendi qualche minuto e riprova.'
+    )
 
 
 def _bgg_headers():
@@ -1019,6 +1107,25 @@ def _format_range(minimum, maximum, suffix=''):
     if not minimum or not maximum:
         return None
     return f'{minimum}{suffix}' if minimum == maximum else f'{minimum}-{maximum}{suffix}'
+
+
+def _xml_value(item, path):
+    """Read an XML API2 value attribute, falling back to node text."""
+    node = item.find(path)
+    if node is None:
+        return None
+    return node.get('value') or node.text
+
+
+def _parse_year(value):
+    """Convert BoardGameGeek's year value to a valid database integer."""
+    if not value:
+        return None
+    try:
+        year = int(value.strip())
+    except (AttributeError, TypeError, ValueError):
+        return None
+    return year if 1900 <= year <= 2100 else None
 
 
 def _format_difficulty(weight):

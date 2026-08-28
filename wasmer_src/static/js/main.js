@@ -115,6 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add loading indicator to forms on submit
     forms.forEach(function(form) {
         form.addEventListener('submit', function() {
+            if (form.classList.contains('no-loading')) {
+                return;
+            }
             const submitButton = form.querySelector('button[type="submit"]');
             if (submitButton) {
                 submitButton.disabled = true;

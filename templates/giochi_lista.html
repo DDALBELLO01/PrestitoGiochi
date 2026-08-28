@@ -143,14 +143,19 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-end">
-                                        <div class="btn-group btn-group-sm">
+                                        <div class="game-actions">
                                             <a href="{{ url_for('giochi_modifica', id=gioco.id) }}" 
-                                               class="btn btn-outline-primary" title="Modifica">
+                                               class="btn btn-outline-primary game-action" title="Modifica">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
+                                            <form method="POST" action="{{ url_for('giochi_duplica', id=gioco.id) }}" class="d-inline no-loading">
+                                                <button type="submit" class="btn btn-outline-success game-action" title="Duplica copia" aria-label="Duplica {{ gioco.titolo }}">
+                                                    <i class="bi bi-files"></i>
+                                                </button>
+                                            </form>
                                             <button type="button" class="btn btn-outline-danger" 
                                                     onclick="confermaEliminazione('{{ gioco.id }}', '{{ gioco.titolo }}')" 
-                                                    title="Elimina">
+                                                    title="Elimina" aria-label="Elimina {{ gioco.titolo }}">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>

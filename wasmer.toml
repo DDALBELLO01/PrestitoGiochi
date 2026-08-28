@@ -1,6 +1,6 @@
 [package]
 name = "ddalbello01/software-prestiti"
-version = "0.2.3"
+version = "0.2.16"
 description = "Il Sentiero dei Draghi - gestione prestiti giochi"
 
 [dependencies]

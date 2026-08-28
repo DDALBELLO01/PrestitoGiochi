@@ -13,12 +13,21 @@
                 <div class="card-body">
                     <p class="text-muted">Verranno cercati automaticamente su BoardGameGeek i giochi già presenti nel catalogo che hanno uno o più metadati mancanti.</p>
                     {% if giochi %}
+                    <form method="POST" id="scrapingForm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold">Giochi da completare</span>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Selezione giochi">
+                            <button type="button" class="btn btn-outline-primary" onclick="impostaSelezione(true)">Seleziona tutti</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="impostaSelezione(false)">Deseleziona tutti</button>
+                        </div>
+                    </div>
                     <div class="table-responsive mb-3">
                         <table class="table table-sm align-middle">
-                            <thead><tr><th>Gioco</th><th>Metadati mancanti</th></tr></thead>
+                            <thead><tr><th><span class="visually-hidden">Seleziona</span></th><th>Gioco</th><th>Metadati mancanti</th></tr></thead>
                             <tbody>
                                 {% for gioco in giochi %}
                                 <tr>
+                                    <td><input class="form-check-input gioco-checkbox" type="checkbox" name="giochi_selezionati" value="{{ gioco.id }}" checked aria-label="Seleziona {{ gioco.titolo }}"></td>
                                     <td>{{ gioco.titolo }}</td>
                                     <td class="text-muted">
                                         {% if not gioco.editore %}Editore, {% endif %}
@@ -33,8 +42,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <form method="POST">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-cloud-download"></i> Completa metadati</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-cloud-download"></i> Completa metadati selezionati</button>
                     </form>
                     {% else %}
                     <div class="alert alert-success mb-3"><i class="bi bi-check-circle"></i> Tutti i giochi posseduti hanno i metadati compilati.</div>
@@ -45,4 +53,14 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function impostaSelezione(seleziona) {
+    document.querySelectorAll('.gioco-checkbox').forEach(function(checkbox) {
+        checkbox.checked = seleziona;
+    });
+}
+</script>
 {% endblock %}

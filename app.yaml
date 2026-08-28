@@ -16,4 +16,5 @@ env:
   FLASK_DEBUG: "false"
   AUTH_USERNAME: "admin"
   AUTH_PASSWORD: "SentieroDraghi2026"
+  BGG_API_TOKEN: "ed1018fe-bbf8-4e63-b150-5d6624c9bb8c"
 app_id: da_RvJI4t0UXxx8
