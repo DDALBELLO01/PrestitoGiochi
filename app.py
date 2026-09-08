@@ -30,8 +30,9 @@ if database_dir:
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['AUTH_USERNAME'] = os.environ.get('AUTH_USERNAME', 'admin')
 app.config['AUTH_PASSWORD_HASH'] = os.environ.get('AUTH_PASSWORD_HASH', '')
-if not app.config['AUTH_PASSWORD_HASH'] and os.environ.get('AUTH_PASSWORD'):
-    app.config['AUTH_PASSWORD_HASH'] = generate_password_hash(os.environ['AUTH_PASSWORD'])
+if not app.config['AUTH_PASSWORD_HASH']:
+    password = os.environ.get('AUTH_PASSWORD', 'SentieroDraghi2026')
+    app.config['AUTH_PASSWORD_HASH'] = generate_password_hash(password)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', '').lower() == 'true'

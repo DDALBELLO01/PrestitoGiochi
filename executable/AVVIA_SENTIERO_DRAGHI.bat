@@ -10,7 +10,7 @@ echo Premi CTRL+C per fermare il server
 echo ===============================================
 echo.
 
-cd /d "%~dp0"
+cd ..
 start http://localhost:5000
 python app.py
 

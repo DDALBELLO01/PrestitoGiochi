@@ -17,10 +17,10 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8 offset-md-2">
+    <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="">
+                <form method="POST" action="" class="compact-edit-form">
                     {{ form.hidden_tag() }}
                     
                     <div class="mb-3">
@@ -72,11 +72,16 @@
                     
                     <div class="mb-3">
                         {{ form.immagine_path.label(class="form-label") }}
-                        {{ form.immagine_path(class="form-control", placeholder="https://esempio.com/immagine.jpg") }}
+                        {{ form.immagine_path(class="form-control", id="immaginePath", placeholder="https://esempio.com/immagine.jpg") }}
                         <small class="form-text text-muted">
                             <i class="bi bi-info-circle"></i> 
                             URL dell'immagine del gioco (opzionale)
                         </small>
+                        <div id="imagePreviewContainer" class="mt-3 d-none">
+                            <div class="small text-muted mb-1">Anteprima</div>
+                            <img id="imagePreview" src="" alt="Anteprima immagine del gioco" class="img-thumbnail" style="max-width: 220px; max-height: 220px; object-fit: contain;">
+                            <div id="imagePreviewError" class="small text-danger d-none mt-1">Impossibile caricare l'immagine da questo URL.</div>
+                        </div>
                     </div>
                     
                     <div class="mb-3">
@@ -122,4 +127,45 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('immaginePath');
+    const container = document.getElementById('imagePreviewContainer');
+    const preview = document.getElementById('imagePreview');
+    const error = document.getElementById('imagePreviewError');
+
+    if (!input || !container || !preview || !error) return;
+
+    function aggiornaAnteprima() {
+        const url = input.value.trim();
+        error.classList.add('d-none');
+        preview.classList.remove('d-none');
+
+        if (!url) {
+            container.classList.add('d-none');
+            preview.removeAttribute('src');
+            return;
+        }
+
+        container.classList.remove('d-none');
+        preview.src = url;
+    }
+
+    preview.addEventListener('load', function() {
+        error.classList.add('d-none');
+        preview.classList.remove('d-none');
+    });
+
+    preview.addEventListener('error', function() {
+        preview.classList.add('d-none');
+        error.classList.remove('d-none');
+    });
+
+    input.addEventListener('input', aggiornaAnteprima);
+    aggiornaAnteprima();
+});
+</script>
 {% endblock %}

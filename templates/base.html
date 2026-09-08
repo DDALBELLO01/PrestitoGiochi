@@ -205,6 +205,12 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
+                {% if category == 'warning' %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle-fill"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
+                    </div>
+                {% else %}
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
                         const iconMap = {
@@ -229,6 +235,7 @@
                         showFlashModal(title, message, category, icon);
                     });
                 </script>
+                {% endif %}
             {% endfor %}
         {% endif %}
     {% endwith %}

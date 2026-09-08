@@ -5,7 +5,7 @@ echo Il Sentiero dei Draghi - Creazione Eseguibile
 echo ================================================================
 echo.
 
-cd /d "%~dp0"
+cd ..
 
 REM Termina processi Python in esecuzione
 echo [1/5] Chiusura processi in esecuzione...
