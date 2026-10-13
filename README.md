@@ -1,5 +1,13 @@
 # Istruzioni per l'uso - Il Sentiero dei Draghi
 
+## Avvio con Docker
+
+1. Copia `.env.example` in `.env` e modifica `SECRET_KEY` e `AUTH_PASSWORD` con valori personali. `BGG_API_TOKEN` è facoltativo.
+2. Dalla cartella del progetto esegui `docker compose up --build -d`.
+3. Apri <http://localhost:3002> e accedi con le credenziali configurate in `.env`.
+
+Docker Compose conserva il database SQLite nel volume `prestiti-data`, anche quando il container viene ricreato. Per fermare l'applicazione esegui `docker compose down`; non rimuovere il volume se vuoi mantenere i dati.
+
 ## Avvio su Wasmer
 
 Il progetto include `app.yaml` e `Procfile` per il deploy come applicazione Flask tramite Gunicorn. Non usare `wasmer publish`: quel comando serve a pubblicare pacchetti WebAssembly e richiede un file `.wasm`.

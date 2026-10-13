@@ -4,9 +4,9 @@ package: .
 
 services:
   - name: web
-    run: python -m flask --app /src/app run --host=0.0.0.0 --port=8080 --no-reload
+    run: python -m flask --app /src/app run --host=0.0.0.0 --port=3002 --no-reload
     ports:
-      - port: 5000
+      - port: 3002
         type: http
 owner: ddalbello01
 env:

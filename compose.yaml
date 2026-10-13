@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3002}:3002"
+    env_file:
+      - .env
+    environment:
+      PORT: "3002"
+      DATABASE_PATH: /app/instance/prestiti.db
+    volumes:
+      - prestiti-data:/app/instance
+
+volumes:
+  prestiti-data:
