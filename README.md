@@ -6,7 +6,9 @@
 2. Dalla cartella del progetto esegui `docker compose up --build -d`.
 3. Apri <http://localhost:3002> e accedi con le credenziali configurate in `.env`.
 
-Senza `DATABASE_URL` o `DB_HOST`, Docker Compose conserva il database SQLite nel volume `prestiti-data`, anche quando il container viene ricreato. Per usare PostgreSQL, configura in `.env` `DB_HOST=host.docker.internal`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` e `DB_PASSWORD`; il Compose mappa `host.docker.internal` al gateway host anche su Linux. PostgreSQL deve inoltre ascoltare sul gateway Docker e consentire in `pg_hba.conf` solo le reti Docker necessarie. Per fermare l'applicazione esegui `docker compose down`; non rimuovere il volume SQLite se vuoi mantenere i dati.
+Il Compose usa la rete host su Linux: l'applicazione ascolta direttamente sulla porta 3002 dell'host, che deve essere libera; `APP_PORT` non modifica questa porta e non sono necessarie mappature `ports`.
+
+Senza `DATABASE_URL` o `DB_HOST`, Docker Compose conserva il database SQLite nel volume `prestiti-data`, anche quando il container viene ricreato. Per usare PostgreSQL locale, configura in `.env` `DB_HOST=127.0.0.1`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` e `DB_PASSWORD`. Se imposti `DATABASE_URL`, questa ha precedenza sulle variabili `DB_*`. PostgreSQL puo' rimanere in ascolto solo su localhost, senza aprire l'accesso alle reti Docker. Per fermare l'applicazione esegui `docker compose down`; non rimuovere il volume SQLite se vuoi mantenere i dati.
 
 ## Avvio su Wasmer
 
